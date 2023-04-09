@@ -8,18 +8,9 @@ namespace WorkingWithDB
         //подключаемся к sql
         SqlConnection sqlConnection;
 
-        public Form1()
+        async void RefreshData()
         {
-            InitializeComponent();
-        }
-
-        private async void Form1_Load(object sender, EventArgs e)
-        {
-            string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=D:\John\Dev\C#\winForms\WorkingWithDB\Database1.mdf;Integrated Security=True";
-
-            sqlConnection = new SqlConnection(connectionString);
-
-            await sqlConnection.OpenAsync();
+            listBox1.Items.Clear();
 
             SqlDataReader sqlReader = null;
 
@@ -43,6 +34,21 @@ namespace WorkingWithDB
                 if (sqlReader is not null)
                     sqlReader.Close();
             }
+        }
+
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private async void Form1_Load(object sender, EventArgs e)
+        {
+            string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=D:\John\Dev\C#\winForms\WorkingWithDB\Database1.mdf;Integrated Security=True";
+
+            sqlConnection = new SqlConnection(connectionString);
+
+            await sqlConnection.OpenAsync();
+            RefreshData();
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -71,6 +77,7 @@ namespace WorkingWithDB
                 command.Parameters.AddWithValue("Price", textBox2.Text);
 
                 await command.ExecuteNonQueryAsync();
+                RefreshData();
             }
             else
             {
@@ -81,30 +88,7 @@ namespace WorkingWithDB
 
         private async void refreshToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            listBox1.Items.Clear();
-
-            SqlDataReader sqlReader = null;
-
-            SqlCommand command = new SqlCommand("SELECT * FROM [Products]", sqlConnection);
-
-            try
-            {
-                //считываем таблицу
-                sqlReader = await command.ExecuteReaderAsync();
-                while (await sqlReader.ReadAsync())
-                {
-                    listBox1.Items.Add(Convert.ToString(sqlReader["Id"]) + "  " + Convert.ToString(sqlReader["Name"]) + "  " + Convert.ToString(sqlReader["Price"]));
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message.ToString(), ex.Source.ToString(), MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                if (sqlReader is not null)
-                    sqlReader.Close();
-            }
+            RefreshData();
         }
 
         private async void button2_Click(object sender, EventArgs e)
@@ -122,6 +106,7 @@ namespace WorkingWithDB
                 command.Parameters.AddWithValue("Price", textBox3.Text);
 
                 await command.ExecuteNonQueryAsync();
+                RefreshData();
             }
             else if (!string.IsNullOrEmpty(textBox4.Text) && !string.IsNullOrWhiteSpace(textBox4.Text))
             {
@@ -145,6 +130,7 @@ namespace WorkingWithDB
                 SqlCommand command = new SqlCommand("DELETE FROM [Products] WHERE [Id]=@Id", sqlConnection);
                 command.Parameters.AddWithValue("Id", textBox6.Text);
                 await command.ExecuteNonQueryAsync();
+                RefreshData();
             }
             else
             {
